@@ -4,7 +4,7 @@ from typing import Dict, List
 from config import (
     COUNTRIES_TO_DROP,
     COUNTRY_MAPPINGS,
-    DB_WRITE_OPTIONS,
+    DB_OPTIONS,
     NULL_INDICATORS,
 )
 from pyspark.sql import DataFrame, SparkSession
@@ -80,11 +80,81 @@ def filter_null_values(df, null_indicators: List[str]):
 
 
 def write_to_db(df: DataFrame, write_options):
-    df.write.format("jdbc").options(**write_options).mode("overwrite").save()
+    df = df.withColumnsRenamed(
+        {
+            "Country": "country",
+            "Constant (2023) US$_Military": "constant_2023_usd_military",
+            "Current US$_Military": "current_usd_military",
+            "Share of GDP_Military": "share_gdp_military",
+            "Per capita_Military": "per_capita_military",
+            "Share of Govt spending_Military": "share_govt_spend_military",
+            "Exports of goods and services (% of GDP)": "exports_percent_gdp",
+            "GDP per capita (constant 2015 US$)": "gdp_per_capita_2015_usd",
+            "GDP per capita (current US$)": "gdp_per_capita_current_usd",
+            "Gross capital formation (% of GDP)": "gcf_percent_gdp",
+            "Life expectancy at birth, female (years)": "life_expectancy_female",
+            "Life expectancy at birth, male (years)": "life_expectancy_male",
+            "Life expectancy at birth, total (years)": "life_expectancy_total",
+            "Net migration": "net_migration",
+            "Trade (% of GDP)": "trade_percent_gdp",
+        }
+    )
+
+    df = df.withColumn(
+        "constant_2023_usd_military", df["constant_2023_usd_military"].cast("double")
+    )
+    df = df.withColumn(
+        "current_usd_military", df["current_usd_military"].cast("double")
+    )
+    df = df.withColumn("share_gdp_military", df["share_gdp_military"].cast("double"))
+    df = df.withColumn("per_capita_military", df["per_capita_military"].cast("double"))
+    df = df.withColumn(
+        "share_govt_spend_military", df["share_govt_spend_military"].cast("double")
+    )
+    df = df.withColumn("exports_percent_gdp", df["exports_percent_gdp"].cast("double"))
+    df = df.withColumn(
+        "gdp_per_capita_2015_usd", df["gdp_per_capita_2015_usd"].cast("double")
+    )
+    df = df.withColumn(
+        "gdp_per_capita_current_usd", df["gdp_per_capita_current_usd"].cast("double")
+    )
+    df = df.withColumn("gcf_percent_gdp", df["gcf_percent_gdp"].cast("double"))
+    df = df.withColumn(
+        "life_expectancy_female", df["life_expectancy_female"].cast("double")
+    )
+    df = df.withColumn(
+        "life_expectancy_male", df["life_expectancy_male"].cast("double")
+    )
+    df = df.withColumn(
+        "life_expectancy_total", df["life_expectancy_total"].cast("double")
+    )
+    df = df.withColumn("net_migration", df["net_migration"].cast("double"))
+    df = df.withColumn("trade_percent_gdp", df["trade_percent_gdp"].cast("double"))
+
+    df.write.format("jdbc").options(**write_options).option(
+        "createTableColumnTypes",
+        """
+                country VARCHAR(100),
+                constant_2023_usd_military FLOAT,
+                current_usd_military FLOAT,
+                share_gdp_military FLOAT,
+                per_capita_military FLOAT,
+                share_govt_spend_military FLOAT,
+                exports_percent_gdp FLOAT,
+                gdp_per_capita_2015_usd FLOAT,
+                gdp_per_capita_current_usd FLOAT,
+                gcf_percent_gdp FLOAT,
+                life_expectancy_female FLOAT,
+                life_expectancy_male FLOAT,
+                life_expectancy_total FLOAT,
+                net_migration FLOAT,
+                trade_percent_gdp FLOAT
+            """,
+    ).mode("overwrite").save()
 
 
 def main():
-    spark = SparkSession.builder.appName("ProyectoFinal").getOrCreate()
+    spark = SparkSession.builder.appName("ETL").getOrCreate()
 
     # Cargar y preparar datasets individualmente
     sipri_df = load_and_prep_sipri_data(spark, "src/data/sipri_clean.csv")
@@ -105,8 +175,10 @@ def main():
     df = df.drop("Multidimensional poverty headcount ratio (UNDP) (% of population)")
     df = filter_null_values(df, NULL_INDICATORS)
 
+    df.write.csv("src/data/full.csv")
+
     # Write to DB
-    write_to_db(df, DB_WRITE_OPTIONS)
+    write_to_db(df, DB_OPTIONS)
 
 
 if __name__ == "__main__":

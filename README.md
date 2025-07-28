@@ -46,3 +46,32 @@ de nombres, etc. y escribe a base de datos.
     ```
 
 3. Programa de Aprendizaje Automático:
+
+    a. Ejecutar programa
+    ```
+    sh run_ml.sh
+    ```
+
+    b. Ver análisis de resultados
+    ```
+    cat analisis_de_resultados.txt
+    ```
+
+
+## Estructura de Base de Datos ms_di:
+
+- country `VARCHAR(100)`
+- constant_2023_usd_military `FLOAT`
+- current_usd_military `FLOAT`
+- share_gdp_military `FLOAT`
+- per_capita_military `FLOAT`
+- share_govt_spend_military `FLOAT`
+- exports_percent_gdp `FLOAT`
+- gdp_per_capita_2015_usd `FLOAT`
+- gdp_per_capita_current_usd `FLOAT`
+- gcf_percent_gdp `FLOAT`
+- life_expectancy_female `FLOAT`
+- life_expectancy_male `FLOAT`
+- life_expectancy_total `FLOAT`
+- net_migration `FLOAT`
+- trade_percent_gdp `FLOAT`

@@ -33,9 +33,9 @@ COUNTRIES_TO_DROP = [
 NULL_INDICATORS = ["..", "...", "0", "1"]
 
 
-DB_WRITE_OPTIONS = {
+DB_OPTIONS = {
     "url": "jdbc:postgresql://host.docker.internal:5433/postgres",
     "user": "postgres",
     "password": "testPassword",
-    "dbtable": "dbtable",
+    "dbtable": "ms_di",
 }
